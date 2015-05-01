@@ -1,0 +1,48 @@
+---
+# - name: Git clone WordPress Skeleton
+#   git: repo=https://github.com/markjaquith/WordPress-Skeleton.git 
+#        dest={{ wp_base_path }}/wordpress
+#        recursive=no # not clone submodule
+
+- name: Download WordPress
+  get_url: url={{ wp_src_url }} 
+           dest={{ wp_base_path }}/wordpress/wp-{{ wp_version }}.tar.gz
+           sha256sum="{{ wp_sha256sum }}"
+
+- name: Extract archive
+  shell: | 
+        cd {{ wp_base_path }}/wordpress &&
+        /bin/tar xvf wp-{{ wp_version }}.tar.gz &&
+        mv wordpress wp
+  args:
+    creates: "{{ wp_base_path }}/wordpress/wp"
+
+- name: Fetch random salts for WordPress config
+  local_action: command curl https://api.wordpress.org/secret-key/1.1/salt/
+  register: "wp_salt"
+  sudo: no
+
+- name: Create WordPress database
+  mysql_db: name={{ wp_db_name }} state=present
+
+- name: Create WordPress database user
+  mysql_user: name={{ wp_db_user }} 
+              password={{ wp_db_password }} 
+              priv={{ wp_db_name }}.*:ALL 
+              host='localhost' 
+              state=present
+
+- name: Copy WordPress config file
+  template: src=wp-config.php dest={{ wp_base_path }}/wordpress/wp-config.php
+
+- name: Make SymLink
+  file: src={{ wp_base_path }}/wordpress/wp-config.php
+        dest={{ wp_base_path }}/wordpress/wp/wp-config.php
+        state=link
+
+- name: Change ownership of WordPress installation
+  file: path={{ wp_base_path }}/wordpress/ 
+        owner={{ wp_user }} 
+        group={{ wp_group }}  
+        state=directory 
+        recurse=yes

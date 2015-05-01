@@ -1,0 +1,30 @@
+---
+- name: download mysql repo
+  get_url: url=http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm
+           dest=/tmp/
+
+- name: mysql repo install
+  yum: name=/tmp/mysql-community-release-el6-5.noarch.rpm state=present
+
+- name: Install Mysql package
+  yum: name={{ item }} state=present
+  with_items:
+    - mysql-server
+    - MySQL-python
+    - libselinux-python
+    - libsemanage-python
+    - mysql-devel
+    - mysql-server
+    - mysql-utilities
+
+# - name: Configure SELinux to start mysql on any port
+#   seboolean: name=mysql_connect_any state=true persistent=yes
+#   when: ansible_selinux.status == "enabled"
+
+- name: Create Mysql configuration file
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+  notify: 
+  - restart mysql
+
+- name: Start Mysql Service
+  service: name=mysqld state=started enabled=yes
