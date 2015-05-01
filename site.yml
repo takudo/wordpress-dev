@@ -6,8 +6,8 @@
   # sudo: yes
 
   roles:
-    # - common
+    - common
+    - mysql 
     - wordpress
-    # - mysql 
-    # - nginx
+    - nginx
     - php-fpm

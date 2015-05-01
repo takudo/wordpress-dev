@@ -1,8 +1,8 @@
 ---
-# - name: Git clone WordPress Skeleton
-#   git: repo=https://github.com/markjaquith/WordPress-Skeleton.git 
-#        dest={{ wp_base_path }}/wordpress
-#        recursive=no # not clone submodule
+- name: Git clone WordPress Skeleton
+  git: repo=https://github.com/takudo/WordPress-Skeleton.git 
+       dest={{ wp_base_path }}/wordpress
+       recursive=no # not clone submodule
 
 - name: Download WordPress
   get_url: url={{ wp_src_url }} 
